@@ -1,0 +1,16 @@
+# SQLite
+*.db
+*.db-journal
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+.env
+
+# IDEs
+.vscode/
+.idea/
