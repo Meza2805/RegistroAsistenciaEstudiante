@@ -192,14 +192,30 @@ def obtener_todos_centros():
     filas = cursor.fetchall()
     conn.close()
     return filas
-def activar_centro(id_centro, usuario_id):
-    """Cambia el estado de un centro a 1 (Activo)"""
-    conn = conectar()
+def activar_centro(id_centro, id_usuario_activo):
+    """Reactiva un registro (estado = 1) y registra quién lo hizo."""
+    conn = obtener_conexion() # <-- Asegúrate que sea el mismo nombre que usas arriba
     cursor = conn.cursor()
-    query = "UPDATE centros SET estado = 1, modificado_por = ? WHERE id = ?"
-    cursor.execute(query, (usuario_id, id_centro))
+    ahora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    cursor.execute('''UPDATE Centros 
+                      SET estado = 1, usuario_modifica = ?, fecha_modificacion = ?
+                      WHERE id_centro = ?''', 
+                   (id_usuario_activo, ahora, id_centro))
     conn.commit()
     conn.close()
+
+# También asegúrate de tener esta función para el init de CentrosView
+def obtener_rol_usuario(id_usuario):
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+    # Buscamos el nombre del rol del usuario
+    cursor.execute('''SELECT r.nombre_rol FROM Roles r
+                      JOIN UsuarioRoles ur ON r.id_rol = ur.id_rol
+                      WHERE ur.id_usuario = ?''', (id_usuario,))
+    rol = cursor.fetchone()
+    conn.close()
+    return rol[0] if rol else "Invitado"
 def obtener_rol_usuario(id_usuario):
     """Busca el rol del usuario en la tabla UsuarioRoles"""
     conn = obtener_conexion()
@@ -213,5 +229,37 @@ def obtener_rol_usuario(id_usuario):
     resultado = cursor.fetchone()
     conn.close()
     return resultado[0] if resultado else "Docente"
+
+def obtener_todos_anios():
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT a.id_anio, a.etiqueta, a.activo, a.estado, a.fecha_creacion, u1.username, a.fecha_modificacion, u2.username
+        FROM Anios_Lectivos a
+        LEFT JOIN Usuarios u1 ON a.usuario_crea = u1.id_usuario
+        LEFT JOIN Usuarios u2 ON a.usuario_modifica = u2.id_usuario
+    ''')
+    datos = cursor.fetchall()
+    conn.close()
+    return datos
+
+def insertar_anio(etiqueta, id_usuario):
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+    ahora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute('''INSERT INTO Anios_Lectivos (etiqueta, usuario_crea, fecha_creacion, estado, activo) 
+                      VALUES (?, ?, ?, 1, 0)''', (etiqueta, id_usuario, ahora))
+    conn.commit()
+    conn.close()
+
+def actualizar_anio(id_anio, etiqueta, id_usuario):
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+    ahora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute('''UPDATE Anios_Lectivos SET etiqueta = ?, usuario_modifica = ?, fecha_modificacion = ? 
+                      WHERE id_anio = ?''', (etiqueta, id_usuario, ahora, id_anio))
+    conn.commit()
+    conn.close()
+
 # Inicializar al importar
 inicializar_db()

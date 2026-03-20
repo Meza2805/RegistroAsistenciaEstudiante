@@ -1,5 +1,6 @@
 import tkinter as tk
 from views.centros_view import CentrosView
+from views.anios_view import AniosLectivosView
 
 class ConfiguracionView(tk.Frame):
     def __init__(self, parent, usuario_id):
@@ -92,7 +93,11 @@ class ConfiguracionView(tk.Frame):
         self.limpiar_area()
         view = CentrosView(self.work_area, self.usuario_id)
         view.pack(expand=True, fill="both")
-
+    def mostrar_anios(self):
+        self.actualizar_estilo_botones("anios")
+        self.limpiar_area()
+        view = AniosLectivosView(self.work_area, self.usuario_id)
+        view.pack(expand=True, fill="both")
     def mostrar_proximamente(self, modulo):
         claves = {"Años Lectivos": "anios", "Asignaturas": "materias", "Turnos": "turnos"}
         self.actualizar_estilo_botones(claves.get(modulo))

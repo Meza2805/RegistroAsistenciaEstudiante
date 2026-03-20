@@ -61,7 +61,7 @@ class CentrosView(ttk.Frame):
         table_container.place(relx=0.32, rely=0, relwidth=0.68, relheight=1)
 # --- SECCIÓN DERECHA: DATAGRID MODERNO ---
         # Cambiamos el fondo del contenedor al color que quieres para las líneas
-        color_grid = "#2f3640" 
+        color_grid = "white" 
         table_container = tk.Frame(body, bg=color_grid, highlightbackground="#dcdde1", highlightthickness=1)
         table_container.place(relx=0.32, rely=0, relwidth=0.68, relheight=1)
 
@@ -121,19 +121,26 @@ class CentrosView(ttk.Frame):
         # dejando ver los bordes si configuramos el espaciado
         self.tabla.pack(expand=True, fill="both", padx=0, pady=0) 
 
-        # --- BOTONES DE ACCIÓN (Contenedor blanco para que no herede el color gris) ---
+            # --- BOTONES DE ACCIÓN (Contenedor con margen para respiro visual) ---
+        # bg="white" para mantener consistencia, pady=15 le da espacio arriba y abajo
         actions = tk.Frame(table_container, bg="white")
-        actions.pack(fill="x", side="bottom") # Quitamos los pady para que pegue abajo
+        actions.pack(fill="x", side="bottom", pady=(10, 20), padx=15) 
 
-        tk.Button(actions, text="✏️ EDITAR", bg="#f39c12", fg="white", font=("Segoe UI", 9, "bold"),
-                  relief="flat", padx=15, pady=5, command=self.preparar_edicion).pack(side="left", padx=5)
+        # Alineación a la izquierda con side="left" y espacio entre ellos con padx
+        tk.Button(actions, text="✏️ EDITAR", bg="#f39c12", fg="white", 
+                font=("Segoe UI", 9, "bold"), relief="flat", 
+                padx=20, pady=8, cursor="hand2",
+                command=self.preparar_edicion).pack(side="left", padx=(0, 10))
 
-        tk.Button(actions, text="🚫 DESACTIVAR", bg="#e74c3c", fg="white", font=("Segoe UI", 9, "bold"),
-                  relief="flat", padx=15, pady=5, command=self.eliminar_datos).pack(side="left", padx=5)
+        tk.Button(actions, text="🚫 DESACTIVAR", bg="#e74c3c", fg="white", 
+                font=("Segoe UI", 9, "bold"), relief="flat", 
+                padx=20, pady=8, cursor="hand2",
+                command=self.eliminar_datos).pack(side="left", padx=10)
 
-        tk.Button(actions, text="✅ ACTIVAR", bg="#2980b9", fg="white", font=("Segoe UI", 9, "bold"),
-                  relief="flat", padx=15, pady=5, command=self.activar_registro).pack(side="left", padx=5)
-
+        tk.Button(actions, text="✅ ACTIVAR", bg="#2980b9", fg="white", 
+                font=("Segoe UI", 9, "bold"), relief="flat", 
+                padx=20, pady=8, cursor="hand2",
+                command=self.activar_registro).pack(side="left", padx=10)
         # Configuración de colores para filas desactivadas
         self.tabla.tag_configure('desactivado', background='#fab1a0', foreground='#636e72')
 
