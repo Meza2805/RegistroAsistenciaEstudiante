@@ -1,20 +1,23 @@
 import tkinter as tk
 from views.centros_view import CentrosView
 from views.anios_view import AniosLectivosView
+from views.asignaturas_view import AsignaturasView
+# 1. Importamos la nueva vista de Turnos
+from views.turnos_view import TurnosView
 
 class ConfiguracionView(tk.Frame):
     def __init__(self, parent, usuario_id):
         super().__init__(parent, bg="white")
         self.usuario_id = usuario_id
         self.buttons = {}
-        self.menu_expandido = True # Estado inicial del menú
+        self.menu_expandido = True 
 
         # --- SIDEBAR DINÁMICO ---
         self.sidebar = tk.Frame(self, bg="#2f3640", width=220)
         self.sidebar.pack(side="left", fill="y")
         self.sidebar.pack_propagate(False)
 
-        # Contenedor para el botón de colapsar (estilo superior)
+        # Contenedor para el botón de colapsar
         self.header_frame = tk.Frame(self.sidebar, bg="#2f3640")
         self.header_frame.pack(fill="x", pady=(10, 20))
 
@@ -25,22 +28,21 @@ class ConfiguracionView(tk.Frame):
                                    command=self.toggle_menu)
         self.btn_toggle.pack(side="right", padx=10)
 
-        # Label del título (se ocultará al contraer)
         self.lbl_titulo = tk.Label(self.header_frame, text=" CONFIGURACIÓN", 
                                   font=("Segoe UI", 9, "bold"), bg="#2f3640", fg="#dcdde1")
         self.lbl_titulo.pack(side="left", padx=10)
 
-        # Definición de opciones
+        # --- DEFINICIÓN DE OPCIONES ACTUALIZADA ---
+        # Ahora todas las opciones principales están vinculadas a sus métodos
         self.menu_options = [
             ("Sedes / Centros", "centros", "🏢", self.mostrar_centros),
-            ("Años Lectivos", "anios", "📅", lambda: self.mostrar_proximamente("Años Lectivos")),
-            ("Asignaturas", "materias", "📚", lambda: self.mostrar_proximamente("Asignaturas")),
-            ("Turnos", "turnos", "🕒", lambda: self.mostrar_proximamente("Turnos"))
+            ("Años Lectivos", "anios", "📅", self.mostrar_anios),
+            ("Asignaturas", "materias", "📚", self.mostrar_asignaturas),
+            ("Turnos / Horarios", "turnos", "🕒", self.mostrar_turnos) # <--- Vinculado
         ]
 
-        # Creación de botones
+        # Creación dinámica de botones en el sidebar
         for text, key, icon, command in self.menu_options:
-            # Guardamos el texto e icono por separado para poder manipularlos
             btn = tk.Button(self.sidebar, text=f"{icon}   {text}", font=("Segoe UI", 10),
                             relief="flat", bg="#2f3640", fg="#95a5a6",
                             anchor="w", padx=20, pady=12, cursor="hand2",
@@ -53,30 +55,32 @@ class ConfiguracionView(tk.Frame):
         self.work_area = tk.Frame(self, bg="white")
         self.work_area.pack(side="right", expand=True, fill="both")
         
+        # Vista inicial por defecto
         self.mostrar_centros()
 
+    # =========================================================================
+    # LÓGICA DE NAVEGACIÓN Y UI
+    # =========================================================================
+
     def toggle_menu(self):
-        """Lógica para contraer o expandir el menú lateral"""
+        """Contrae o expande el menú lateral"""
         if self.menu_expandido:
-            # Contraer
             self.sidebar.configure(width=60)
-            self.lbl_titulo.pack_forget() # Ocultar título
+            self.lbl_titulo.pack_forget() 
             for key in self.buttons:
-                # Dejar solo el icono
                 self.buttons[key]["btn"].configure(text=self.buttons[key]["icon"], anchor="center", padx=0)
             self.menu_expandido = False
         else:
-            # Expandir
             self.sidebar.configure(width=220)
-            self.lbl_titulo.pack(side="left", padx=10) # Mostrar título
+            self.lbl_titulo.pack(side="left", padx=10) 
             for key in self.buttons:
-                # Mostrar icono + texto
                 txt = self.buttons[key]["text"]
                 ico = self.buttons[key]["icon"]
                 self.buttons[key]["btn"].configure(text=f"{ico}   {txt}", anchor="w", padx=20)
             self.menu_expandido = True
 
     def actualizar_estilo_botones(self, active_key):
+        """Maneja el resaltado visual del botón activo"""
         for key in self.buttons:
             btn = self.buttons[key]["btn"]
             if key == active_key:
@@ -85,21 +89,41 @@ class ConfiguracionView(tk.Frame):
                 btn.configure(bg="#2f3640", fg="#95a5a6")
 
     def limpiar_area(self):
+        """Elimina los widgets actuales para cargar una nueva vista"""
         for widget in self.work_area.winfo_children():
             widget.destroy()
+
+    # =========================================================================
+    # MÉTODOS DE RENDERIZADO DE VISTAS
+    # =========================================================================
 
     def mostrar_centros(self):
         self.actualizar_estilo_botones("centros")
         self.limpiar_area()
         view = CentrosView(self.work_area, self.usuario_id)
         view.pack(expand=True, fill="both")
+
     def mostrar_anios(self):
         self.actualizar_estilo_botones("anios")
         self.limpiar_area()
         view = AniosLectivosView(self.work_area, self.usuario_id)
         view.pack(expand=True, fill="both")
-    def mostrar_proximamente(self, modulo):
-        claves = {"Años Lectivos": "anios", "Asignaturas": "materias", "Turnos": "turnos"}
-        self.actualizar_estilo_botones(claves.get(modulo))
+
+    def mostrar_asignaturas(self):
+        self.actualizar_estilo_botones("materias")
         self.limpiar_area()
-        # ... (Mantener el label de "En desarrollo" que ya tenías)
+        view = AsignaturasView(self.work_area, self.usuario_id)
+        view.pack(expand=True, fill="both")
+
+    def mostrar_turnos(self):
+        """Carga la nueva vista de gestión de turnos"""
+        self.actualizar_estilo_botones("turnos")
+        self.limpiar_area()
+        view = TurnosView(self.work_area, self.usuario_id)
+        view.pack(expand=True, fill="both")
+
+    def mostrar_proximamente(self, modulo):
+        """Placeholder para módulos en desarrollo"""
+        self.limpiar_area()
+        tk.Label(self.work_area, text=f"Módulo de {modulo}\nEn desarrollo...", 
+                 bg="white", fg="#7f8c8d", font=("Segoe UI", 14)).pack(expand=True)
